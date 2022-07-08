@@ -11,20 +11,20 @@ from forms import LoginForm, RegisterForm, CreatePostForm, CommentForm
 from flask_gravatar import Gravatar
 
 
-application = Flask(__name__)
-application.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-ckeditor = CKEditor(application)
-Bootstrap(application)
+app = Flask(__name__)
+app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+ckeditor = CKEditor(app)
+Bootstrap(app)
 gravatar = Gravatar(application, size=100, rating='g', default='retro', force_default=False, force_lower=False, use_ssl=False, base_url=None)
 
 
 
 # CONNECT TO DB
-application.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(application)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 login_manager = LoginManager()
-login_manager.init_app(application)
+login_manager.init_app(app)
 
 
 @login_manager.user_loader
@@ -78,13 +78,13 @@ def admin_only(f):
     return decorated_function
 
 
-@application.route('/')
+@app.route('/')
 def get_all_posts():
     posts = BlogPost.query.all()
     return render_template("index.html", all_posts=posts, current_user=current_user)
 
 
-@application.route('/register', methods=["GET", "POST"])
+@app.route('/register', methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
@@ -113,7 +113,7 @@ def register():
     return render_template("register.html", form=form, current_user=current_user)
 
 
-@application.route('/login', methods=["GET", "POST"])
+@app.route('/login', methods=["GET", "POST"])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -134,13 +134,13 @@ def login():
     return render_template("login.html", form=form, current_user=current_user)
 
 
-@application.route('/logout')
+@app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('get_all_posts'))
 
 
-@application.route("/post/<int:post_id>", methods=["GET", "POST"])
+@app.route("/post/<int:post_id>", methods=["GET", "POST"])
 def show_post(post_id):
     form = CommentForm()
     requested_post = BlogPost.query.get(post_id)
@@ -161,17 +161,17 @@ def show_post(post_id):
     return render_template("post.html", post=requested_post, form=form, current_user=current_user)
 
 
-@application.route("/about")
+@app.route("/about")
 def about():
     return render_template("about.html", current_user=current_user)
 
 
-@application.route("/contact")
+@app.route("/contact")
 def contact():
     return render_template("contact.html", current_user=current_user)
 
 
-@application.route("/new-post", methods=["GET", "POST"])
+@app.route("/new-post", methods=["GET", "POST"])
 @admin_only
 def add_new_post():
     form = CreatePostForm()
@@ -191,7 +191,7 @@ def add_new_post():
     return render_template("make-post.html", form=form, current_user=current_user)
 
 
-@application.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
+@app.route("/edit-post/<int:post_id>", methods=["GET", "POST"])
 @admin_only
 def edit_post(post_id):
     post = BlogPost.query.get(post_id)
@@ -213,7 +213,7 @@ def edit_post(post_id):
     return render_template("make-post.html", form=edit_form, is_edit=True, current_user=current_user)
 
 
-@application.route("/delete/<int:post_id>")
+@app.route("/delete/<int:post_id>")
 @admin_only
 def delete_post(post_id):
     post_to_delete = BlogPost.query.get(post_id)
@@ -224,4 +224,4 @@ def delete_post(post_id):
 
 if __name__ == "__main__":
     # app.run(debug=True)
-    application.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000)
